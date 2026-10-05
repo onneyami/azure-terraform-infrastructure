@@ -1,13 +1,7 @@
 variable "resource_group_name" {
   type        = string
   default     = "rg-andrei"
-  description = "Name of the target Azure Resource Group."
-}
-
-variable "location" {
-  type        = string
-  default     = "westeurope"
-  description = "Azure Region for all resources."
+  description = "Name of the existing Azure Resource Group."
 }
 
 variable "cluster_name" {

@@ -1,6 +1,6 @@
 output "resource_group_name" {
-  value       = azurerm_resource_group.rg.name
-  description = "Target Resource Group Name"
+  value       = data.azurerm_resource_group.rg.name
+  description = "Existing Resource Group Name"
 }
 
 output "aks_cluster_name" {
@@ -14,6 +14,6 @@ output "acr_login_server" {
 }
 
 output "connect_cluster_cmd" {
-  value       = "az aks get-credentials --resource-group ${azurerm_resource_group.rg.name} --name ${azurerm_kubernetes_cluster.aks.name}"
+  value       = "az aks get-credentials --resource-group ${data.azurerm_resource_group.rg.name} --name ${azurerm_kubernetes_cluster.aks.name}"
   description = "Command to fetch kubeconfig credentials"
 }
