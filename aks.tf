@@ -23,6 +23,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
     network_plugin    = "azure"
     network_policy    = "azure"
     load_balancer_sku = "standard"
+
+  # --- CIDR FIX ---
+    service_cidr      = "10.2.0.0/16" # Shifted outside 10.0.0.0/16 VNet range
+    dns_service_ip    = "10.2.0.10"  # Must be an available IP within service_cidr
+
   }
 
   oidc_issuer_enabled       = true
