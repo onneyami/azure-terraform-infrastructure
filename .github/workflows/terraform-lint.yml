@@ -1,0 +1,46 @@
+name: "Terraform Lint & Security Scan"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches-ignore: [ "main" ]
+
+jobs:
+  lint-and-scan:
+    name: "Lint, Format & Checkov Scan"
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Validate Terraform Formatting
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Check Terraform Formatting
+        run: terraform fmt -check -recursive
+
+      # 3. TFLint Static Analysis
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: "latest"
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint --recursive
+
+      # 4. Checkov Infrastructure-as-Code Security Scanner
+      - name: Run Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          framework: terraform
+          output_format: cli
+          soft_fail: false # Set to true if you don't want to block PRs on warnings

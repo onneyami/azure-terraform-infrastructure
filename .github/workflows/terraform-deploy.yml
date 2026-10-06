@@ -1,0 +1,70 @@
+name: "Terraform Plan & Deploy"
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "environments/**"
+      - "modules/**"
+  push:
+    branches: [ "main" ]
+    paths:
+      - "environments/**"
+      - "modules/**"
+
+# Permissions required for Azure OpenID Connect (OIDC) authentication
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  terraform-matrix:
+    name: "Terraform Execution (${{ matrix.environment }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        environment: [ "dev" ] # Add "prod" when ready
+
+    defaults:
+      run:
+        working-directory: "environments/${{ matrix.environment }}"
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Authenticate to Azure via OIDC Keyless Login
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # 3. Setup Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      # 4. Initialize Terraform working directory
+      - name: Terraform Init
+        run: terraform init
+
+      # 5. Validate configuration files
+      - name: Terraform Validate
+        run: terraform validate
+
+      # 6. Generate execution plan (Runs on PRs and merges)
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -out=tfplan
+        continue-on-error: false
+
+      # 7. Apply infrastructure changes (Only on merge to 'main')
+      - name: Terraform Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
