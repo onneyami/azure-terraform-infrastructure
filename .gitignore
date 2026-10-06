@@ -1,18 +1,23 @@
-# Terraform local state & overrides
+# Local execution state
 *.tfstate
 *.tfstate.*
-.terraform/
-.terraform.lock.hcl
+crash.log
+crash.*.log
+
+# Ignore local override files
 override.tf
 override.tf.json
+*_override.tf
+*_override.tf.json
 
-# Secrets & Local Tokens
-*.pem
-*.key
-argocd-token.txt
-kubeconfig
+# Ignore CLI configuration files
+.terraform/
+.terraform.lock.hcl
 
-# System & IDE clutter
+# Ignore variable files with credentials
+*.tfvars
+!*.example.tfvars
+
+# OS generated files
 .DS_Store
-.idea/
-.vscode/
+Thumbs.db
